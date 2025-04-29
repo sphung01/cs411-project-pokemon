@@ -1,15 +1,10 @@
-DROP TABLE IF EXISTS boxers;
-CREATE TABLE boxers (
+DROP TABLE IF EXISTS pokemons;
+CREATE TABLE pokemons (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
-    weight FLOAT NOT NULL,
-    height FLOAT NOT NULL,
-    reach FLOAT NOT NULL,
-    age INTEGER NOT NULL,
-    fights INTEGER NOT NULL DEFAULT 0,
-    wins INTEGER NOT NULL DEFAULT 0,
-    weight_class TEXT,
+    attack FLOAT NOT NULL,
+    defense FLOAT NOT NULL,
     UNIQUE(name)
 );
 
-CREATE INDEX idx_boxers_name ON boxers(name);
+CREATE INDEX idx_pokemons_name ON pokemons(name);
