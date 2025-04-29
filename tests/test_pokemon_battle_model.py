@@ -84,7 +84,7 @@ def test_get_pokemons_with_data(app, pokemon_battle_model, sample_pokemons):
     pokemons = pokemon_battle_model.get_pokemons()
     assert pokemons == sample_pokemons, "Expected get_pokemons to return the correct pokemons list."
 
-def test_enter_ring(pokemon_battle_model, sample_pokemons, app):
+def test_enter_battlefield(pokemon_battle_model, sample_pokemons, app):
     """
         Test that a pokemon is correctly added to the battlefield.
     """
@@ -98,7 +98,7 @@ def test_enter_ring(pokemon_battle_model, sample_pokemons, app):
     assert len(pokemon_battle_model.battlefield) == 20, "Battlefield should contain one pokemon after calling enter_battlefield."
     assert pokemon_battle_model.battlefield[1] == 20, "Expected 'Staryu' (id 20) in the battlefield."
 
-def test_enter_ring_full(pokemon_battle_model, app, sample_pokemons):
+def test_enter_battlefield_full(pokemon_battle_model, app, sample_pokemons):
     """Test that enter_ring raises an error when the ring is full.
 
     """
@@ -108,3 +108,52 @@ def test_enter_ring_full(pokemon_battle_model, app, sample_pokemons):
         pokemon_battle_model.enter_battlefield(sample_pokemons[1].id)
 
     assert len(pokemon_battle_model.battlefield) == 2, "Battlefield should still contain only 2 pokemons after trying to add a third."
+
+##########################################################
+# Fight
+##########################################################
+
+def test_get_pokemon_skills(pokemon_battle_model, sample_pokemons):
+    """
+        Test the get_pokemon_skills method.
+    """
+    expected_score_1 = 40.0 + 25.0
+    assert pokemon_battle_model.get_pokemon_skills(sample_pokemons[0]) == expected_score_1, f"Expected score: {expected_score_1}, got {pokemon_battle_model.get_pokemon_skills(sample_pokemons[0])}"
+
+    expected_score_2 = 45.0 + 30.0
+    assert pokemon_battle_model.get_pokemon_skills(sample_pokemons[1]) == expected_score_1, f"Expected score: {expected_score_2}, got {pokemon_battle_model.get_pokemon_skills(sample_pokemons[1])}"
+
+def test_battle(pokemon_battle_model, sample_pokemons, caplog, mocker):
+    """
+        Test the battle method with sample pokemons.
+    """
+
+    pokemon_battle_model.battlefield.extend(sample_pokemons)
+
+    mocker.patch("models.pokemon_battle_model.BattleModel.get_pokemon_skills", side_effect=[65.0, 75.0])
+    mocker.patch("models.pokemon_battle_model.random.random", return_value=0.42)
+    mocker.patch("models.pokemon_battle_model.BattleModel.get_pokemons", return_value=sample_pokemons)
+    
+    winner_name = pokemon_battle_model.battle()
+
+    assert winner_name == "Pikachu", f"Expected pokemon 1 to win, but got {winner_name}"
+
+    assert len(pokemon_battle_model.battlefield) == 0, "Battlefield should be empty after the fight."
+
+    assert "The winner is: Pikachu" in caplog.text, "Expected winner log message not found."
+
+def test_battle_with_empty_battlefield(pokemon_battle_model):
+    """
+        Test that the battle method raises a ValueError when there are fewer than two pokemons.
+    """
+    with pytest.raises(ValueError, match="There must be two pokemons to start a fight."):
+        pokemon_battle_model.battle()
+
+def test_battle_with_one_pokemon(pokemon_battle_model, sample_pokemon1):
+    """
+        Test that the battle method raises a ValueError when there's only one pokemon.
+    """
+    pokemon_battle_model.battlefield.append(sample_pokemon1)
+
+    with pytest.raises(ValueError, match="There must be two pokemons to start a fight."):
+        pokemon_battle_model.battle()
