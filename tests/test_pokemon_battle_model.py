@@ -3,7 +3,7 @@ import time
 import pytest
 
 from models.pokemon_battle_model import BattleModel
-# from models.pokemon_team_model
+from models.pokemon_team_model import Pokemons
 
 @pytest.fixture
 def pokemon_battle_model():
@@ -37,3 +37,8 @@ def sample_pokemon2(session):
 @pytest.fixture
 def sample_pokemons(sample_pokemon1, sample_pokemon2):
     return [sample_pokemon1, sample_pokemon2]
+
+##########################################################
+# Pokemon Prep
+##########################################################
+

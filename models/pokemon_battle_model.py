@@ -1,6 +1,5 @@
 import logging
 import math
-import random
 from typing import List
 
 from logger import configure_logger
