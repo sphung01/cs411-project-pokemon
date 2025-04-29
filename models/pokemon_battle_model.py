@@ -71,10 +71,41 @@ class BattleModel:
         return winner.name
 
     def clear_battlefield(self):
-        pass
+        """
+            Clears the list of pokemons on the battlefield.
+        """
 
-    def enter_battlefield(self):
-        pass
+        if not self.battlefield:
+            logger.warning("Attempted to clear an empty battlefield.")
+            return
+        logger.info("Clearing pokemons from the battlefield.")
+        self.battlefield.clear()
+
+    def enter_battlefield(self, pokemon_id: int):
+        """
+            Prepares a pokemong by adding them to the battlefield.
+
+            Args:
+                pokemon_id (int): The ID of the pokemon to enter the ring.
+
+            Raises:
+                ValueError: If the battlefield already has two pokemons.
+                ValueError: If the pokemon ID is invalid or the pokemon does not exist.
+        """
+
+        if len(self.battlefield) >= 2:
+            logger.error(f"Battlefield is full")
+            raise ValueError("Battlefield is full")
+        try:
+            pokemon = Pokemons.get_pokemon_by_id(pokemon_id)
+        except ValueError as e:
+            logger.error(str(e))
+            raise
+        
+        self.battlefield.append(pokemon.id)
+        logger.info(f"Adding pokemon '{pokemon.name}' (ID {pokemon_id}) to the battlefield")
+
+        logger.info(f"Current pokemons in the battlefield: {[Pokemons.get_pokemon_by_id(p).name for p in self.battlefield]}")
 
     def get_pokemons(self) -> List[Pokemons]:
         pass
