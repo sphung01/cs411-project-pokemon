@@ -1,5 +1,6 @@
 import logging
 import math
+import random
 from typing import List
 
 from .logger import configure_logger
@@ -53,7 +54,7 @@ class BattleModel:
         logger.debug(f"Raw delta between skills: {delta:.3f}")
         logger.debug(f"Normalized delta: {normalized_delta:.3f}")
 
-        random = random.randint(1, 100)
+        random = random.random()
 
         logger.debug(f"Random number from random.org: {random :.3f}")
 
