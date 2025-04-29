@@ -2,7 +2,7 @@ import logging
 import math
 from typing import List
 
-from logger import configure_logger
+from .logger import configure_logger
 
 logger = logging.getLogger(__name__)
 configure_logger(logger)
