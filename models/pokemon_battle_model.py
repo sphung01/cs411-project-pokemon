@@ -1,7 +1,6 @@
 import logging
 import math
-import os
-import time
+import random
 from typing import List
 
 from logger import configure_logger
@@ -55,11 +54,11 @@ class BattleModel:
         logger.debug(f"Raw delta between skills: {delta:.3f}")
         logger.debug(f"Normalized delta: {normalized_delta:.3f}")
 
-        random_number = get_random()
+        random = random.randint(1, 100)
 
-        logger.debug(f"Random number from random.org: {random_number:.3f}")
+        logger.debug(f"Random number from random.org: {random :.3f}")
 
-        if random_number < normalized_delta:
+        if random < normalized_delta:
             winner = pokemon_1
         else:
             winner = pokemon_2
@@ -83,7 +82,7 @@ class BattleModel:
 
     def enter_battlefield(self, pokemon_id: int):
         """
-            Prepares a pokemong by adding them to the battlefield.
+            Prepares a pokemon by adding them to the battlefield.
 
             Args:
                 pokemon_id (int): The ID of the pokemon to enter the ring.
@@ -108,7 +107,35 @@ class BattleModel:
         logger.info(f"Current pokemons in the battlefield: {[Pokemons.get_pokemon_by_id(p).name for p in self.battlefield]}")
 
     def get_pokemons(self) -> List[Pokemons]:
-        pass
+        """
+            Retrieves the current list of pokemons on the battlefield.
+
+        Returns:
+            List[Pokemons]: A list of Pokemons dataclass instances representing the pokemons in the battlefield.
+        """
+
+        if not self.battlefield:
+            raise ValueError("The battlefield is empty.")
+        else:
+            pass
+
+        logger.info(f"Battlefield has pokemons!")
+        return self.battlefield
 
     def get_pokemon_skills(self, pokemon: Pokemons) -> float:
-        pass
+        """
+            Calculates the skill for a pokemon
+
+            Args:
+                pokemon (Pokemons): A Pokemons dataclass representing the combatant.
+            
+            Returns:
+                float: The calculated skill
+        """
+
+        logger.info(f"Calculating fighting skill for {pokemon.name}: attack={pokemon.attack}, defense={pokemon.defense}")
+
+        skill = (pokemon.attack + pokemon.defense)
+
+        logger.info(f"Fighting skill for {pokemon.name}: {skill:.3f}")
+        return skill
