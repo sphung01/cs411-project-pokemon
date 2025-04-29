@@ -15,7 +15,14 @@ class BattleModel:
     """
 
     def __init__(self):
-        pass
+        """
+            Initializes the BattleManager with an empty list of combatants.
+
+            Attributes:
+                battlefield (List[int]): The list of ids of the pokemons in the battlefield
+        """
+
+        self.battlefield: List[int] = []
 
     def battle(self) -> str:
         pass
