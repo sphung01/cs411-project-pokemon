@@ -2,7 +2,7 @@ import logging
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from db import db
 from models.logger import configure_logger
-
+from models.api_utils import get_attack_and_defense
 
 logger = logging.getLogger(__name__)
 configure_logger(logger)
@@ -29,13 +29,19 @@ class Pokemons(db.Model):
 
         # Skip validation when SQLAlchemy instantiates via ORM
         if name is None and attack is None and defense is None:
-            return
+            return  
 
         if not name or not isinstance(name, str):
             raise ValueError("Pokemon must be a non-empty string.")
-        if not isinstance(attack, float) or attack <= 0:
+        
+        if attack is None or defense is None:
+            stats = get_attack_and_defense(name.lower())
+            attack = stats[0]
+            defense = stats[1]
+        
+        if not isinstance(attack, (int, float)) or attack <= 0:
             raise ValueError("Attack must be a float and greater than 0.")
-        if not isinstance(defense, float) or defense <= 0:
+        if not isinstance(defense, (int, float)) or defense <= 0:
             raise ValueError("Defense must be a float and greater than 0.")
 
         self.name = name
@@ -45,12 +51,6 @@ class Pokemons(db.Model):
     @classmethod
     def get_attack(cls, attack: float) -> str:
         """Get the attack stat.
-
-        This method is defined as a class method rather than a static method,
-        even though it does not currently require access to the class object.
-        Both @staticmethod and @classmethod would be valid choices in this context;
-        however, using @classmethod makes it easier to support subclass-specific
-        behavior or logic overrides in the future.
 
         Args:
             attack: The attack stat of the pokemon.
@@ -63,13 +63,6 @@ class Pokemons(db.Model):
     @classmethod
     def get_defense(cls, defense: float) -> str:
         """Get the defense stat.
-
-        This method is defined as a class method rather than a static method,
-        even though it does not currently require access to the class object.
-        Both @staticmethod and @classmethod would be valid choices in this context;
-        however, using @classmethod makes it easier to support subclass-specific
-        behavior or logic overrides in the future.
-
         Args:
             defense: The defense stat of the pokemon.
 
@@ -79,13 +72,13 @@ class Pokemons(db.Model):
         return defense
 
     @classmethod
-    def create_pokemon(cls, name: str, attack: float, defense: float) -> None:
+    def create_pokemon(cls, name: str, attack: float = None, defense: float = None) -> None:
         """Create and persist a new Pokemon instance.
 
         Args:
             name: The name of the pokemon.
-            attack: The attack stat of the pokemon.
-            defense: The defense stat of the pokemon.
+            attack: Optional attack stat. If None, fetched from PokéAPI.
+            defense: Optional defense stat. If None, fetched from PokéAPI.
 
         Raises:
             IntegrityError: If a pokemon with the same name already exists.
@@ -190,3 +183,36 @@ class Pokemons(db.Model):
         db.session.commit()
         logger.info(f"pokemon with ID {pokemon_id} permanently deleted.")
 
+    def update_stats(self, stat, change):
+        """Update a pokemon's attack or defense
+
+        Args:
+            stat (str): the stat you want to update
+            change (float): how you want the stat to change. Can be positive or negative
+
+        Raises:
+            ValueError: If invalid stat selection, change isn't a float, or if the change would bring a stat below 0 
+        """
+        if stat not in {"attack", "defense"}:
+            raise ValueError("stat must be 'attack' or 'defense'.")
+        
+        if not isinstance(change, float):
+            raise ValueError("change must be a float")
+        
+        if self.attack + change < 0:
+            raise ValueError("attack can't be < 0")
+        if self.defense + change < 0:
+            raise ValueError("defense can't be < 0")
+        
+        if stat == "attack":
+            self.attack += change
+            
+        if stat == "defense":
+            self.defense += change
+            
+        db.session.commit()
+        logger.info(f"Updated stats for pokemon {self.name}: {self.defense} defense, {self.attack} attack.")
+        
+        
+            
+        
