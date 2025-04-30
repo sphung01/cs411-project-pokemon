@@ -9,6 +9,8 @@ from .pokemon_model import Pokemons
 logger = logging.getLogger(__name__)
 configure_logger(logger)
 
+random = random.random()
+
 class BattleModel:
     """
         A class that manages the battlefield where pokemons fight.
@@ -37,7 +39,7 @@ class BattleModel:
 
         if len(self.battlefield) < 2:
             logger.error("There must be two pokemons to start a fight.")
-            raise ValueError("There must be two boxers to start a fight.")
+            raise ValueError("There must be two pokemons to start a fight.")
         
         pokemon_1, pokemon_2 = self.get_pokemons()
 
@@ -54,8 +56,6 @@ class BattleModel:
 
         logger.debug(f"Raw delta between skills: {delta:.3f}")
         logger.debug(f"Normalized delta: {normalized_delta:.3f}")
-
-        random = random.random()
 
         logger.debug(f"Random number from random.org: {random :.3f}")
 
@@ -96,31 +96,31 @@ class BattleModel:
         if len(self.battlefield) >= 2:
             logger.error(f"Battlefield is full")
             raise ValueError("Battlefield is full")
+
         try:
             pokemon = Pokemons.get_pokemon_by_id(pokemon_id)
         except ValueError as e:
             logger.error(str(e))
             raise
-        
-        self.battlefield.append(pokemon.id)
+
+        self.battlefield.append(pokemon)  # append the whole pokemon object
         logger.info(f"Adding pokemon '{pokemon.name}' (ID {pokemon_id}) to the battlefield")
 
-        logger.info(f"Current pokemons in the battlefield: {[Pokemons.get_pokemon_by_id(p).name for p in self.battlefield]}")
+        logger.info(f"Current pokemons in the battlefield: {[p.name for p in self.battlefield]}")
 
     def get_pokemons(self) -> List[Pokemons]:
         """
-            Retrieves the current list of pokemons on the battlefield.
+        Retrieves the current list of pokemons on the battlefield.
 
         Returns:
             List[Pokemons]: A list of Pokemons dataclass instances representing the pokemons in the battlefield.
-        """
 
+        Raises:
+            ValueError: If the battlefield is not empty
+        """
         if not self.battlefield:
             raise ValueError("The battlefield is empty.")
-        else:
-            pass
-
-        logger.info(f"Battlefield has pokemons!")
+        
         return self.battlefield
 
     def get_pokemon_skills(self, pokemon: Pokemons) -> float:

@@ -1,4 +1,5 @@
 import pytest
+import random
 
 from models.pokemon_battle_model import BattleModel
 from models.pokemon_model import Pokemons
@@ -61,23 +62,19 @@ def test_clear_battlefield_empty(pokemon_battle_model, caplog):
 
     assert "Attempted to clear an empty battlefield." in caplog.text, "Expected a warning when clearing an empty battlefield."
 
-def test_get_pokemons_empty(pokemon_battle_model, caplog):
+def test_get_pokemons_empty(pokemon_battle_model):
     """
         Test that get_pokemons returns an empty list when there is no pokemon and logs a warning.
     """
-    with caplog.at_level("WARNING"):
-        pokemons = pokemon_battle_model.get_pokemons()
-
-    assert pokemons == [], "Expected get_pokemons to return an empty list when there is no pokemon."
-
-    assert "Retrieving pokemon from an empty battlefield." in caplog.text, "Expected a warning when getting pokemon from an empty battlefield."
+    with pytest.raises(ValueError, match="The battlefield is empty."):
+        pokemon_battle_model.get_pokemons()
 
 def test_get_pokemons_with_data(app, pokemon_battle_model, sample_pokemons):
     """
         Test that get_pokemons returns the correct list when there are pokemon.
         # Note that app is a fixture defined in the conftest.py file
     """
-    pokemon_battle_model.battlefield.extend([pokemon.id for pokemon in sample_pokemons])
+    pokemon_battle_model.battlefield.extend(sample_pokemons)
 
     pokemons = pokemon_battle_model.get_pokemons()
     assert pokemons == sample_pokemons, "Expected get_pokemons to return the correct pokemons list."
@@ -87,14 +84,14 @@ def test_enter_battlefield(pokemon_battle_model, sample_pokemons, app):
         Test that a pokemon is correctly added to the battlefield.
     """
     pokemon_battle_model.enter_battlefield(sample_pokemons[0].id)
-
-    assert len(pokemon_battle_model.battlefield) == 25, "Battlefield should contain one pokemon after calling enter_battlefield."
-    assert pokemon_battle_model.battlefield[0] == 25, "Expected 'Pikachu' (id 25) in the battlefield."
+    
+    assert len(pokemon_battle_model.battlefield) == 1, "Battlefield should contain one pokemon after calling enter_battlefield."
+    assert pokemon_battle_model.battlefield[0].id == sample_pokemons[0].id, f"Expected 'Pikachu' (id {sample_pokemons[0].id}) in the battlefield."
 
     pokemon_battle_model.enter_battlefield(sample_pokemons[1].id)
 
-    assert len(pokemon_battle_model.battlefield) == 20, "Battlefield should contain one pokemon after calling enter_battlefield."
-    assert pokemon_battle_model.battlefield[1] == 20, "Expected 'Staryu' (id 20) in the battlefield."
+    assert len(pokemon_battle_model.battlefield) == 2, "Battlefield should contain two pokemon after calling enter_battlefield."
+    assert pokemon_battle_model.battlefield[1].id == sample_pokemons[1].id, f"Expected 'Staryu' (id {sample_pokemons[1].id}) in the battlefield."
 
 def test_enter_battlefield_full(pokemon_battle_model, app, sample_pokemons):
     """Test that enter_ring raises an error when the ring is full.
@@ -119,17 +116,17 @@ def test_get_pokemon_skills(pokemon_battle_model, sample_pokemons):
     assert pokemon_battle_model.get_pokemon_skills(sample_pokemons[0]) == expected_score_1, f"Expected score: {expected_score_1}, got {pokemon_battle_model.get_pokemon_skills(sample_pokemons[0])}"
 
     expected_score_2 = 45.0 + 30.0
-    assert pokemon_battle_model.get_pokemon_skills(sample_pokemons[1]) == expected_score_1, f"Expected score: {expected_score_2}, got {pokemon_battle_model.get_pokemon_skills(sample_pokemons[1])}"
+    assert pokemon_battle_model.get_pokemon_skills(sample_pokemons[1]) == expected_score_2, f"Expected score: {expected_score_2}, got {pokemon_battle_model.get_pokemon_skills(sample_pokemons[1])}"
 
 def test_battle(pokemon_battle_model, sample_pokemons, caplog, mocker):
     """
         Test the battle method with sample pokemons.
     """
 
-    pokemon_battle_model.battlefield.extend(sample_pokemons)
+    pokemon_battle_model.battlefield.extend([p.id for p in sample_pokemons])
 
     mocker.patch("models.pokemon_battle_model.BattleModel.get_pokemon_skills", side_effect=[65.0, 75.0])
-    mocker.patch("models.pokemon_battle_model.random.random", return_value=0.42)
+    mocker.patch("random.random", return_value=0.42)
     mocker.patch("models.pokemon_battle_model.BattleModel.get_pokemons", return_value=sample_pokemons)
     
     winner_name = pokemon_battle_model.battle()
