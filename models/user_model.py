@@ -2,12 +2,12 @@ import hashlib
 import logging
 import os
 
-from db.db import db
+from db import db
 
 from flask_login import UserMixin
 from sqlalchemy.exc import IntegrityError
 
-from logger import configure_logger
+from .logger import configure_logger
 
 logger = logging.getLogger(__name__)
 configure_logger(logger)

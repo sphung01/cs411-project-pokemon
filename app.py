@@ -11,6 +11,8 @@ from models.pokemon_battle_model import BattleModel
 from db import db
 from models.logger import configure_logger
 
+import requests
+
 load_dotenv()
 
 def create_app(config_class=ProductionConfig):
@@ -257,11 +259,64 @@ def create_app(config_class=ProductionConfig):
     #
     ##########################################################
 
+    @app.route('/api/fetch-pokemon/<string:name>', methods=['GET'])
+    def fetch_pokemon(name):
+        """
+        Fetch Pokémon data from the external PokéAPI, return name, attack, and defense,
+        and save it to the database if not already present.
+        """
+        # First, check if Pokémon is already in your local DB
+        existing_pokemon = Pokemons.query.filter_by(name=name.lower()).first()
+        if existing_pokemon:
+            return jsonify({
+                "status": "success",
+                "pokemon": {
+                    "name": existing_pokemon.name,
+                    "attack": existing_pokemon.attack,
+                    "defense": existing_pokemon.defense
+                },
+                "source": "local database"
+            }), 200
 
-    # More routes go here: /create-user, /login, /logout, /change-password
-    # Then routes like /team/add, /team/list, /battle/start, etc.
+        # Otherwise, fetch from PokéAPI
+        url = f'https://pokeapi.co/api/v2/pokemon/{name.lower()}'
+        response = requests.get(url)
 
+        if response.status_code != 200:
+            return jsonify({
+                "status": "error",
+                "message": f"Pokémon '{name}' not found in PokéAPI."
+            }), 404
+
+        data = response.json()
+
+        stats = {stat['stat']['name']: stat['base_stat'] for stat in data['stats']}
+        attack = stats.get('attack')
+        defense = stats.get('defense')
+
+        # Save to DB
+        new_pokemon = Pokemons(name=name.lower(), attack=attack, defense=defense)
+        db.session.add(new_pokemon)
+        db.session.commit()
+
+        return jsonify({
+            "status": "success",
+            "pokemon": {
+                "name": name.lower(),
+                "attack": attack,
+                "defense": defense
+            },
+            "source": "external API and saved to DB"
+        }), 201
+    
     return app
+
+
+    ##########################################################
+    #
+    # Creating App
+    #
+    ##########################################################
 
 if __name__ == '__main__':
     app = create_app()

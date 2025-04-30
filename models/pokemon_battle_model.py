@@ -4,6 +4,7 @@ import random
 from typing import List
 
 from .logger import configure_logger
+from .pokemon_model import Pokemons
 
 logger = logging.getLogger(__name__)
 configure_logger(logger)

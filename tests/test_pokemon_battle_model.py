@@ -1,9 +1,7 @@
-import time
-
 import pytest
 
 from models.pokemon_battle_model import BattleModel
-from models.pokemon_team_model import Pokemons
+from models.pokemon_model import Pokemons
 
 @pytest.fixture
 def pokemon_battle_model():
