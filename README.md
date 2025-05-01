@@ -1,5 +1,8 @@
 # cs411-project
 
+# What the application does at a high level
+Applications focus on overarching functionality and purpose of the application. We look at the bigger picture than just the implementations of the modules or components. Developeres that create applications pay attention on how every modules in the system can interact with each other. High level is crucial for system's purpose and effective communication.
+
 # Routes Documentation
 
 ### Route: `/api/health`
