@@ -239,3 +239,41 @@ _None_
   "message": "An internal error occurred while deleting users",
   "status": "error"
 } 
+```
+
+### Route: `/fetch-pokemon/<string:name>`
+
+- **Request Type:** `GET`  
+- **Purpose:** Fetch Pokémon data from the external PokéAPI, return name, attack, and defense, and save it to the database if not already present.
+
+#### Response Format: JSON
+
+**Success Response Example:**
+- **Code:** `200`  
+- **Content:**
+```json
+{
+  "pokemon": {"name, attack, defense"},
+  "status": "success",
+  "source": "local database"
+} 
+```
+- **Code:** `201`  
+- **Content:**
+```json
+{
+  "pokemon": {"name, attack, defense"},
+  "status": "success",
+  "source": "external API and saved to DB"
+} 
+```
+
+**Error Response Example:**
+- **Code:** `404`  
+- **Content:**
+```json
+{
+  "message": "Pokemon 'name' not found in PokeAPI",
+  "status": "error"
+} 
+```
