@@ -154,41 +154,6 @@ _None_
 } 
 ```
 
-**Error Response Example:**
-- **Code:** `400`  
-- **Content:**
-```json
-{
-  "message": "Username and password are required",
-  "status": "error"
-} 
-```
-- **Code:** `401`  
-- **Content:**
-```json
-{
-  "message": "Invalid username or password",
-  "status": "error"
-} 
-```
-- **Code:** `401`  
-- **Content:**
-```json
-{
-  "message": "error string",
-  "status": "error"
-} 
-```
-- **Code:** `500`  
-- **Content:**
-```json
-{
-  "message": "An internal error occurred during login",
-  "status": "error"
-} 
-```
-
-
 
 
 
