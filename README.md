@@ -155,6 +155,61 @@ _None_
 ```
 
 
+### Route: `/change-password`
 
+- **Request Type:** `POST`  
+- **Purpose:** Change the password for the current user.
 
+#### Request Body:
+- `new_password` (String): The new password to set 
 
+#### Response Format: JSON
+
+**Success Response Example:**
+- **Code:** `200`  
+- **Content:**
+```json
+{
+  "message": "Password changed successfully",
+  "status": "success"
+} 
+```
+
+**Error Response Example:**
+- **Code:** `400`  
+- **Content:**
+```json
+{
+  "message": "New password is required",
+  "status": "error"
+} 
+```
+- **Code:** `400`  
+- **Content:**
+```json
+{
+  "message": "str(e)",
+  "status": "error"
+} 
+```
+- **Code:** `500`  
+- **Content:**
+```json
+{
+  "message": "An internal error occurred while changing password",
+  "status": "error"
+} 
+```
+- **Code:** `500`  
+- **Content:**
+```json
+{
+  "message": "An internal error occurred during login",
+  "status": "error"
+} 
+```
+#### Example Request:
+- new_password: newpassword
+#### Example Response:
+- message: Password changed successfully
+- status: 200
