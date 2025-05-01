@@ -24,12 +24,12 @@ _None_
 
 ### Route: `/create-user`
 
-- **Request Type:** `POST`  
-- **Purpose:** Creates a new user account with a username and password.
+- **Request Type:** `PUT`  
+- **Purpose:** Register a new user account.
 
 #### Request Body:
-- `username` (String): User's chosen username.  
-- `password` (String): User's chosen password.
+- `username` (String): The desired username.  
+- `password` (String): The desired password.
 
 #### Response Format: JSON
 
@@ -76,6 +76,66 @@ _None_
 - message: User 'username123' created successfully
 - status: 200
 
+### Route: `/login`
+
+- **Request Type:** `POST`  
+- **Purpose:** Authenticate a user and log them in
+
+#### Request Body:
+- `username` (String): the username of the user.  
+- `password` (String): the password of the user.
+
+#### Response Format: JSON
+
+**Success Response Example:**
+- **Code:** `200`  
+- **Content:**
+```json
+{
+  "message": "User 'newuser123' logged in successfully",
+  "status": "success"
+} 
+```
+
+**Error Response Example:**
+- **Code:** `400`  
+- **Content:**
+```json
+{
+  "message": "Username and password are required",
+  "status": "error"
+} 
+```
+- **Code:** `401`  
+- **Content:**
+```json
+{
+  "message": "Invalid username or password",
+  "status": "error"
+} 
+```
+- **Code:** `401`  
+- **Content:**
+```json
+{
+  "message": "error string",
+  "status": "error"
+} 
+```
+- **Code:** `500`  
+- **Content:**
+```json
+{
+  "message": "An internal error occurred during login",
+  "status": "error"
+} 
+```
+#### Example Request:
+- username: newuser123
+- password: securepassword
+#### Example Response:
+- message: User 'newuser123' logged in successfully
+- status: 200
 
 
 
