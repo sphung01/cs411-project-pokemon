@@ -137,6 +137,58 @@ _None_
 - message: User 'newuser123' logged in successfully
 - status: 200
 
+### Route: `/logout`
+
+- **Request Type:** `POST`  
+- **Purpose:** Log out the current user.
+
+#### Response Format: JSON
+
+**Success Response Example:**
+- **Code:** `200`  
+- **Content:**
+```json
+{
+  "message": "User logged out successfully",
+  "status": "success"
+} 
+```
+
+**Error Response Example:**
+- **Code:** `400`  
+- **Content:**
+```json
+{
+  "message": "Username and password are required",
+  "status": "error"
+} 
+```
+- **Code:** `401`  
+- **Content:**
+```json
+{
+  "message": "Invalid username or password",
+  "status": "error"
+} 
+```
+- **Code:** `401`  
+- **Content:**
+```json
+{
+  "message": "error string",
+  "status": "error"
+} 
+```
+- **Code:** `500`  
+- **Content:**
+```json
+{
+  "message": "An internal error occurred during login",
+  "status": "error"
+} 
+```
+
+
 
 
 
