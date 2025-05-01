@@ -2,6 +2,26 @@
 
 # Routes Documentation
 
+### Route: `/api/health`
+
+- **Request Type:** `GET`  
+- **Purpose:** Verifies that the service is up and running.
+
+#### Request Body:
+_None_
+
+#### Response Format: JSON
+
+**Success Response Example:**
+- **Code:** `200`  
+- **Content:**
+```json
+{
+  "status": "success",
+  "message": "Service is running"
+}
+```
+
 ### Route: `/create-user`
 
 - **Request Type:** `POST`  
@@ -14,12 +34,14 @@
 #### Response Format: JSON
 
 **Success Response Example:**
-- **Code:** `200`  
+- **Code:** `201`  
 - **Content:**
 ```json
 {
   "message": "Account created successfully",
-  "status": "200"
+  "status": "success"
 } 
 ```
+
+
 
