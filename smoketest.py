@@ -1,102 +1,124 @@
 import requests
 
+# ------------------------------
+# Configuration
+# ------------------------------
 
-def run_smoketest():
-    base_url = "http://localhost:5001/api"
-    username = "test"
-    password = "test"
+BASE_URL = "http://localhost:5000/api"
+USERNAME = "smokeuser"
+PASSWORD = "smokepassword"
+NEW_PASSWORD = "smokenewpass"
+POKEMON_1 = "pikachu"
+POKEMON_2 = "bulbasaur"
 
-    test_muhammad_ali = {
-        "name": "Muhammad Ali",
-        "weight": 210.0,
-        "height": 191.0,
-        "reach": 78.0,
-        "age": 32
-    }
+session = requests.Session()
 
-    test_joe_frazier = {
-        "name": "Joe Frazier",
-        "weight": 205.0,
-        "height": 182.0,
-        "reach": 73.0,
-        "age": 30
-    }
+# ------------------------------
+# Health Check
+# ------------------------------
 
-    health_response = requests.get(f"{base_url}/health")
-    assert health_response.status_code == 200
-    assert health_response.json()["status"] == "success"
+def check_health():
+    print("[1] Checking /health...")
+    res = session.get(f"{BASE_URL}/health")
+    assert res.status_code == 200 and "Service is running" in res.text
+    print("Healthcheck passed")
 
-    delete_user_response = requests.delete(f"{base_url}/reset-users")
-    assert delete_user_response.status_code == 200
-    assert delete_user_response.json()["status"] == "success"
-    print("Reset users successful")
+# ------------------------------
+# User Management
+# ------------------------------
 
-    delete_boxer_response = requests.delete(f"{base_url}/reset-boxers")
-    assert delete_boxer_response.status_code == 200
-    assert delete_boxer_response.json()["status"] == "success"
-    print("Reset boxers successful")
+def reset_users():
+    print("[2] Resetting user table...")
+    res = session.delete(f"{BASE_URL}/reset-users")
+    assert res.status_code == 200
+    print("Users table reset")
 
-    create_user_response = requests.put(f"{base_url}/create-user", json={
-        "username": username,
-        "password": password
-    })
-    assert create_user_response.status_code == 201
-    assert create_user_response.json()["status"] == "success"
-    print("User creation successful")
+def create_user():
+    print("[3] Creating user...")
+    res = session.put(f"{BASE_URL}/create-user", json={"username": USERNAME, "password": PASSWORD})
+    assert res.status_code == 201
+    print("User created")
 
-    session = requests.Session()
+def login(password):
+    print(f"[4] Logging in with password: {password}...")
+    res = session.post(f"{BASE_URL}/login", json={"username": USERNAME, "password": password})
+    assert res.status_code == 200
+    print("Login succeeded")
 
-    # Log in
-    login_resp = session.post(f"{base_url}/login", json={
-        "username": username,
-        "password": password
-    })
-    assert login_resp.status_code == 200
-    assert login_resp.json()["status"] == "success"
-    print("Login successful")
+def change_password():
+    print("[5] Changing password...")
+    res = session.post(f"{BASE_URL}/change-password", json={"new_password": NEW_PASSWORD})
+    assert res.status_code == 200
+    print("Password changed")
 
-    create_boxer_resp = session.post(f"{base_url}/add-boxer", json=test_muhammad_ali)
-    print("Status code:", create_boxer_resp.status_code)
-    print("Response JSON:", create_boxer_resp.json())
-    assert create_boxer_resp.status_code == 201
-    assert create_boxer_resp.json()["status"] == "success"
-    print("Boxer creation successful")
+def logout():
+    print("[6] Logging out...")
+    res = session.post(f"{BASE_URL}/logout")
+    assert res.status_code == 200
+    print("Logout succeeded")
 
-    # Change password
-    change_password_resp = session.post(f"{base_url}/change-password", json={
-        "new_password": "new_password"
-    })
-    assert change_password_resp.status_code == 200
-    assert change_password_resp.json()["status"] == "success"
-    print("Password change successful")
+# ------------------------------
+# Pokémon API
+# ------------------------------
 
-    # Log in with new password
-    login_resp = session.post(f"{base_url}/login", json={
-        "username": username,
-        "password": "new_password"
-    })
-    assert login_resp.status_code == 200
-    assert login_resp.json()["status"] == "success"
-    print("Login with new password successful")
+def fetch_pokemon(name):
+    print(f"Fetching Pokémon: {name}...")
+    res = session.get(f"{BASE_URL}/fetch-pokemon/{name}")
+    assert res.status_code in (200, 201) and name.lower() in res.text.lower()
+    print(f"Pokémon {name} fetched")
 
-    create_boxer_resp = session.post(f"{base_url}/add-boxer", json=test_joe_frazier)
-    print("Status code:", create_boxer_resp.status_code)
-    print("Response JSON:", create_boxer_resp.json())
-    assert create_boxer_resp.status_code == 201
-    assert create_boxer_resp.json()["status"] == "success"
-    print("Boxer creation successful")
+def get_pokemon_by_name(name):
+    res = session.get(f"{BASE_URL}/fetch-pokemon/{name}")
+    if res.status_code not in (200, 201):
+        print(f"Failed to fetch Pokémon {name}, status code {res.status_code}")
+        return None
+    return res.json().get("pokemon")
 
-    # Log out
-    logout_resp = session.post(f"{base_url}/logout")
-    assert logout_resp.status_code == 200
-    assert logout_resp.json()["status"] == "success"
-    print("Logout successful")
+# ------------------------------
+# Battle Simulation
+# ------------------------------
 
-    create_boxer_logged_out_resp = session.post(f"{base_url}/add-boxer", json=test_muhammad_ali)
-    # This should fail because we are logged out
-    assert create_boxer_logged_out_resp.status_code == 401
-    assert create_boxer_logged_out_resp.json()["status"] == "error"
-    print("Boxer creation failed as expected")
+def simulate_battle():
+    print("[8] Simulating Pokémon battle...")
+
+    poke1 = get_pokemon_by_name(POKEMON_1)
+    poke2 = get_pokemon_by_name(POKEMON_2)
+
+    if poke1 is None or poke2 is None:
+        raise ValueError("Failed to retrieve one or both Pokémon from the API")
+
+    print(f"Got {POKEMON_1} from DB: {poke1}")
+    print(f"Got {POKEMON_2} from DB: {poke2}")
+
+    for name in [POKEMON_1, POKEMON_2]:
+        print(f"Adding Pokémon '{name}' to battlefield...")
+        response = session.post(f"{BASE_URL}/enter-ring", json={"name": name})
+        if response.status_code != 200:
+            print(f"Failed to enter Pokémon {name} into battlefield: {response.status_code} {response.text}")
+            raise Exception("Battlefield entry failed")
+
+    res = session.get(f"{BASE_URL}/battle")
+    assert res.status_code == 200 and "winner" in res.text
+    winner = res.json().get("winner")
+    print(f"Battle simulation complete. Winner: {winner}")
+
+# ------------------------------
+# Run All Smoketests
+# ------------------------------
+
+def run_smoketests():
+    print("=== SMOKETEST START ===")
+    check_health()
+    reset_users()
+    create_user()
+    login(PASSWORD)
+    change_password()
+    logout()
+    login(NEW_PASSWORD)
+    fetch_pokemon(POKEMON_1)
+    fetch_pokemon(POKEMON_2)
+    simulate_battle()
+    print("=== SMOKETEST COMPLETE ===")
 
 if __name__ == "__main__":
-    run_smoketest()
+    run_smoketests()

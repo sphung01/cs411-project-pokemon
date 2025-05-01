@@ -40,6 +40,7 @@ def create_app(config_class=ProductionConfig):
         }), 401)
 
     pokemon_model = Pokemons()
+    battle_model = BattleModel()
 
     ####################################################
     #
@@ -49,19 +50,12 @@ def create_app(config_class=ProductionConfig):
 
     @app.route('/api/health', methods=['GET'])
     def healthcheck() -> Response:
-        """
-        Health check route to verify the service is running.
-
-        Returns:
-            JSON response indicating the health status of the service.
-
-        """
         app.logger.info("Health check endpoint hit")
         return make_response(jsonify({
             'status': 'success',
             'message': 'Service is running'
         }), 200)
-    
+
     ##########################################################
     #
     # User Management
@@ -70,19 +64,6 @@ def create_app(config_class=ProductionConfig):
 
     @app.route('/api/create-user', methods=['PUT'])
     def create_user() -> Response:
-        """Register a new user account.
-
-        Expected JSON Input:
-            - username (str): The desired username.
-            - password (str): The desired password.
-
-        Returns:
-            JSON response indicating the success of the user creation.
-
-        Raises:
-            400 error if the username or password is missing.
-            500 error if there is an issue creating the user in the database.
-        """
         try:
             data = request.get_json()
             username = data.get("username")
@@ -112,21 +93,9 @@ def create_app(config_class=ProductionConfig):
                 "message": "An internal error occurred while creating user",
                 "details": str(e)
             }), 500)
-        
+
     @app.route('/api/login', methods=['POST'])
     def login() -> Response:
-        """Authenticate a user and log them in.
-
-        Expected JSON Input:
-            - username (str): The username of the user.
-            - password (str): The password of the user.
-
-        Returns:
-            JSON response indicating the success of the login attempt.
-
-        Raises:
-            401 error if the username or password is incorrect.
-        """
         try:
             data = request.get_json()
             username = data.get("username")
@@ -163,37 +132,19 @@ def create_app(config_class=ProductionConfig):
                 "message": "An internal error occurred during login",
                 "details": str(e)
             }), 500)
-        
+
     @app.route('/api/logout', methods=['POST'])
     @login_required
     def logout() -> Response:
-        """Log out the current user.
-
-        Returns:
-            JSON response indicating the success of the logout operation.
-
-        """
         logout_user()
         return make_response(jsonify({
             "status": "success",
             "message": "User logged out successfully"
         }), 200)
-    
+
     @app.route('/api/change-password', methods=['POST'])
     @login_required
     def change_password() -> Response:
-        """Change the password for the current user.
-
-        Expected JSON Input:
-            - new_password (str): The new password to set.
-
-        Returns:
-            JSON response indicating the success of the password change.
-
-        Raises:
-            400 error if the new password is not provided.
-            500 error if there is an issue updating the password in the database.
-        """
         try:
             data = request.get_json()
             new_password = data.get("new_password")
@@ -223,17 +174,9 @@ def create_app(config_class=ProductionConfig):
                 "message": "An internal error occurred while changing password",
                 "details": str(e)
             }), 500)
-        
+
     @app.route('/api/reset-users', methods=['DELETE'])
     def reset_users() -> Response:
-        """Recreate the users table to delete all users.
-
-        Returns:
-            JSON response indicating the success of recreating the Users table.
-
-        Raises:
-            500 error if there is an issue recreating the Users table.
-        """
         try:
             app.logger.info("Received request to recreate Users table")
             with app.app_context():
@@ -252,7 +195,7 @@ def create_app(config_class=ProductionConfig):
                 "message": "An internal error occurred while deleting users",
                 "details": str(e)
             }), 500)
-    
+
     ##########################################################
     #
     # Pokemons
@@ -261,11 +204,6 @@ def create_app(config_class=ProductionConfig):
 
     @app.route('/api/fetch-pokemon/<string:name>', methods=['GET'])
     def fetch_pokemon(name):
-        """
-        Fetch Pokémon data from the external PokéAPI, return name, attack, and defense,
-        and save it to the database if not already present.
-        """
-        # First, check if Pokémon is already in your local DB
         existing_pokemon = Pokemons.query.filter_by(name=name.lower()).first()
         if existing_pokemon:
             return jsonify({
@@ -278,7 +216,6 @@ def create_app(config_class=ProductionConfig):
                 "source": "local database"
             }), 200
 
-        # Otherwise, fetch from PokéAPI
         url = f'https://pokeapi.co/api/v2/pokemon/{name.lower()}'
         response = requests.get(url)
 
@@ -289,12 +226,10 @@ def create_app(config_class=ProductionConfig):
             }), 404
 
         data = response.json()
-
         stats = {stat['stat']['name']: stat['base_stat'] for stat in data['stats']}
         attack = stats.get('attack')
         defense = stats.get('defense')
 
-        # Save to DB
         new_pokemon = Pokemons(name=name.lower(), attack=attack, defense=defense)
         db.session.add(new_pokemon)
         db.session.commit()
@@ -308,15 +243,55 @@ def create_app(config_class=ProductionConfig):
             },
             "source": "external API and saved to DB"
         }), 201
-    
+
+    @app.route('/api/enter-ring', methods=['POST'])
+    @login_required
+    def enter_ring():
+        data = request.get_json()
+        name = data.get("name")
+
+        if not name:
+            return make_response(jsonify({
+                "status": "error",
+                "message": "Missing Pokémon name"
+            }), 400)
+
+        pokemon = Pokemons.query.filter_by(name=name.lower()).first()
+        if not pokemon:
+            return make_response(jsonify({
+                "status": "error",
+                "message": f"Pokémon '{name}' not found"
+            }), 404)
+
+        try:
+            battle_model.enter_battlefield(pokemon.id)
+        except ValueError as e:
+            return make_response(jsonify({
+                "status": "error",
+                "message": str(e)
+            }), 400)
+
+        return jsonify({
+            "status": "success",
+            "message": f"Pokémon '{name}' entered the ring"
+        }), 200
+
+    @app.route('/api/battle', methods=['GET'])
+    @login_required
+    def battle():
+        try:
+            winner = battle_model.battle()
+            return jsonify({
+                "status": "success",
+                "winner": winner
+            }), 200
+        except ValueError as e:
+            return make_response(jsonify({
+                "status": "error",
+                "message": str(e)
+            }), 400)
+
     return app
-
-
-    ##########################################################
-    #
-    # Creating App
-    #
-    ##########################################################
 
 if __name__ == '__main__':
     app = create_app()
