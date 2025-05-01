@@ -213,3 +213,29 @@ _None_
 #### Example Response:
 - message: Password changed successfully
 - status: 200
+
+### Route: `/reset-users`
+
+- **Request Type:** `DELETE`  
+- **Purpose:** Recreate the users table to delete all users.
+
+#### Response Format: JSON
+
+**Success Response Example:**
+- **Code:** `200`  
+- **Content:**
+```json
+{
+  "message": "Users table recreated successfully",
+  "status": "success"
+} 
+```
+
+**Error Response Example:**
+- **Code:** `500`  
+- **Content:**
+```json
+{
+  "message": "An internal error occurred while deleting users",
+  "status": "error"
+} 
