@@ -38,8 +38,35 @@ _None_
 - **Content:**
 ```json
 {
-  "message": "Account created successfully",
+  "message": "User 'username123' created successfully",
   "status": "success"
+} 
+```
+
+**Error Response Example:**
+- **Code:** `400`  
+- **Content:**
+```json
+{
+  "message": "Username and password are required",
+  "status": "error"
+} 
+```
+- **Code:** `400`  
+- **Content:**
+```json
+{
+  "message": "str(e)",
+  "status": "error"
+} 
+```
+- **Code:** `500`  
+- **Content:**
+```json
+{
+  "message": "An internal error occurred while creating users",
+  "status": "error",
+  "details": "error string"
 } 
 ```
 
