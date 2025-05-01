@@ -56,7 +56,7 @@ _None_
 - **Content:**
 ```json
 {
-  "message": "str(e)",
+  "message": "error string",
   "status": "error"
 } 
 ```
@@ -69,6 +69,15 @@ _None_
   "details": "error string"
 } 
 ```
+#### Example Request:
+- username: newuser123
+- password: securepassword
+#### Example Response:
+- message: User 'username123' created successfully
+- status: 200
+
+
+
 
 
 
